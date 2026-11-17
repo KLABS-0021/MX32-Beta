@@ -2,7 +2,7 @@
 
 Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone, iPad or computer. Styled like console gaffer tape: white tape labels in marker, hi-vis orange accents.
 
-**Open the app:** https://kirin-21.github.io/MX32-Beta/
+**Open the app:** https://klabs-0021.github.io/MX32-Beta/
 
 ## What it does
 - Saves multiple events (name, date, venue, console) on your device
