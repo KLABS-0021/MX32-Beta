@@ -1,6 +1,6 @@
 # MX32 Patch Sheet (Beta)
 
-Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone.
+Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone, iPad or computer. Styled like console gaffer tape: white tape labels in marker, hi-vis orange accents.
 
 **Open the app:** https://kirin-21.github.io/MX32-Beta/
 
@@ -8,7 +8,7 @@ Patch lists for the Midas M32 and Behringer X32, in one web page that works on a
 - Saves multiple events (name, date, venue, console) on your device
 - Inputs: 32 channels with label, source (Local, AES50 A/B), scribble-strip colour and notes
 - Aux in and FX returns on their own tab
-- Outputs 1–16, each fed from a bus, the mains or a matrix
+- Outputs 1–16 with label, colour and feed (bus, mains or matrix)
 - Export:
   - **PDF** patch sheet to print or send to the stage crew
   - **SCN** scene file to load on the console from a USB stick (names, colours, sources, input routing, output patching)
