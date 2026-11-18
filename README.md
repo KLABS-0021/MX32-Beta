@@ -1,6 +1,8 @@
 # MX32 Patch Sheet (Beta)
 
-Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone, iPad or computer. Styled like console gaffer tape: white tape labels in marker, hi-vis orange accents.
+Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone, iPad or computer. Dark space grey design with a brushed-metal finish.
+
+Made by Kirin™
 
 **Open the app:** https://klabs-0021.github.io/MX32-Beta/
 

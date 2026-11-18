@@ -16,17 +16,22 @@ Read this first when continuing work on the app. It explains where everything is
 | `README.md` | User-facing description |
 | `.nojekyll` | Stops GitHub Pages from processing the site |
 
-Outside resources (need internet): Google Fonts (Archivo, Permanent Marker, Barlow Condensed) and jsPDF 2.5.1 from cdnjs, loaded only when a PDF is saved.
+Outside resources (need internet): Google Fonts (IBM Plex Sans, IBM Plex Mono) and jsPDF 2.5.1 from cdnjs, loaded only when a PDF is saved.
 
 ## Design rules (agreed with the user)
-- **Gaffer Tape** look: dark background `#0d0d0e`, white "tape" labels in Permanent Marker, Archivo for UI text, hi-vis orange accent `#ff6a1a` (yellow `#ffd23d` for X32 events), round colour lights. Dark only.
+- **Space Grey** look (since 18 Nov 2026): dark space grey `#1c1e22` with a fine brushed-metal texture and grain, warm off-white text `#ecebe7`, silver-grey secondary text `#a3a8b0`, soft red accent `#ec5b52`. Silver gradient titles, brushed-silver divider bars, metal-plate buttons (New event, PDF/SCN/CSV). Dark only. Layout follows the "Patch Paper" design: table-style events list, underline tabs, rows of number + colour dot + label + source.
+- Fonts: **IBM Plex Sans** (UI) and **IBM Plex Mono** (numbers, sources, small labels).
+- **Logo:** silver "M32 / X32" with a red line on a brushed graphite tile (option 2 "Minimal"). Shown in the header and used for the app icons (`icon-180/192/512.png`). Sources: `logo-main.svg` style, drawn as vector paths.
+- **Footer on every page:** "Made by Kirin™" and "© year Kirin · All rights reserved". The PDF footer also says "Made by Kirin™".
 - Keep the **Beta** badge.
 - No tape strip preview on the Inputs tab; the user removed it.
-- Colour pickers close by themselves after a colour is picked.
-- Tabs: Inputs (channels 1–32 only) · Aux & FX · Outputs (outputs 1–16 only) · Export.
+- Colour pickers close by themselves after a colour is picked. Inverted colours show as a coloured ring.
+- Delete needs a second tap on a small red "Confirm delete" button (resets after 4 s).
+- Tabs: Inputs (channels 1–32 only) · Aux & FX · Outputs (outputs 1–16 with colour) · Export.
 - Export: PDF, SCN and CSV as three matching buttons side by side, then input routing, previous events (Open / Duplicate) and this event (Duplicate / Delete).
 - Home page: only the "+ New event" button, no import.
 - Layout: phone = one column; ≥720 px (iPad) = wider rows with notes inline, details in one row; ≥1100 px (desktop, iPad landscape) = sidebar with details and tabs.
+- PDF stays white for printing (black rule, red accents).
 
 ## Data model (localStorage)
 - Key `mx32pro`: `{v:2, events:[…], migrated:1}`. Older single-event key `mx32beta` is migrated in once.
