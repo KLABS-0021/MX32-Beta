@@ -13,10 +13,13 @@ Read this first when continuing work on the app. It explains where everything is
 |---|---|
 | `index.html` | **The whole app**: HTML, CSS, JavaScript, the embedded logo and the built-in base scene. This file is the source of truth. |
 | `manifest.webmanifest`, `icon-180/192/512.png` | Home-screen install (name, icons, standalone display) |
+| `sw.js` | Offline cache (service worker). Saves the app, fonts, icons and PDF tool on the device after the first visit. |
+| `fonts/` | IBM Plex Sans (400–700) and IBM Plex Mono (400–600), Latin, woff2, plus the OFL licence |
+| `lib/jspdf.umd.min.js` | jsPDF 2.5.1 for PDF export, plus its licence |
 | `README.md` | User-facing description |
 | `.nojekyll` | Stops GitHub Pages from processing the site |
 
-Outside resources (need internet): Google Fonts (IBM Plex Sans, IBM Plex Mono) and jsPDF 2.5.1 from cdnjs, loaded only when a PDF is saved.
+**Offline (since 18 Nov 2026):** fonts and jsPDF are stored in the repo, and `sw.js` caches every file. After one visit with internet, the app opens and exports PDF, SCN and CSV with no signal. The app page itself is fetched from the internet first (3 s timeout) so updates arrive, then falls back to the saved copy. Online fallbacks remain for the Claude preview, where the local files don't exist: fonts from jsDelivr (fontsource), jsPDF from cdnjs.
 
 ## Design rules (agreed with the user)
 - **Space Grey** look (since 18 Nov 2026): dark space grey `#1c1e22` with a fine brushed-metal texture and grain, warm off-white text `#ecebe7`, silver-grey secondary text `#a3a8b0`, soft red accent `#ec5b52`. Silver gradient titles, brushed-silver divider bars, metal-plate buttons (New event, PDF/SCN/CSV). Dark only. Layout follows the "Patch Paper" design: table-style events list, underline tabs, rows of number + colour dot + label + source.
@@ -54,8 +57,9 @@ Outside resources (need internet): Google Fonts (IBM Plex Sans, IBM Plex Mono) a
 ## How to make a change
 1. Edit `index.html` (it is plain HTML/CSS/JS, nothing to build).
 2. Test in a browser at 390 px, 820 px and 1440 px widths: create an event, fill channels, pick colours, save PDF / SCN / CSV, duplicate and delete.
-3. Push to `main`; GitHub Pages updates in 1–2 minutes.
-4. Update the Claude preview artifact and the project copy (`claude/mx32-patch-sheet-v2.html`) so all three match.
+3. If you changed or added any file, raise `VERSION` in `sw.js` (and add new files to its `FILES` list), so installed copies refresh.
+4. Push to `main`; GitHub Pages updates in 1–2 minutes. Phones get the new version the next time the app is opened with internet.
+5. Update the Claude preview artifact and the project copy (`claude/mx32-patch-sheet-v2.html`) so all three match.
 
 ## Working with the user
 - Explain in simple, non-technical English.
