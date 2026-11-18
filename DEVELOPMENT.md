@@ -42,7 +42,7 @@ Outside resources (need internet): Google Fonts (IBM Plex Sans, IBM Plex Mono) a
 - Colours 0–15: `OFF RD GN YE BL MG CY WH` then inverted `OFFi … WHi` (same names as the console).
 
 ## Code map (inside `index.html` `<script>`)
-- `F48` flag at the top: 48V is parked (`false`). Turning it on restores the 48V buttons, the PDF column and phantom power in the scene.
+- `F48` flag at the top stays `false`: the user decided 48V controls are not needed. The leftover 48V code can be removed in a clean-up; scenes always leave phantom power off.
 - Data: `blank()`, `norm()`, `used()`, `filled()`; storage `load()`, `save()`, `touch()`.
 - Screens: `renderHome()`, `renderEdit()`, `renderTab()`; rows `row()` (channel/aux/FX), `oout()` (outputs).
 - Events: one click / input / change listener on `#app` using `data-act`, `data-c`, `data-o`, `data-os`, `data-k` (colour), `data-n` (open picker), `data-t` (tab).
