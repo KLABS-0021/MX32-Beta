@@ -52,7 +52,9 @@ Read this first when continuing work on the app. It explains where everything is
 - Saving files: `saveFile()` uses Claude's `downloads` capability inside the Claude preview, otherwise a normal browser download.
 - CSV: `toCSV()`, `fromCSV()` (import code kept, no button).
 - PDF: `loadPDF()`, `buildPDF()` (A4, dark header, tables with colour swatches).
-- Blank fields use the M32/X32 factory defaults in the scene: channel N takes console input N (routing Local 1–32 unless a group of 8 is needed for the stage box), names stay empty, and outputs left blank use Out 1–14 = Mix Bus 1–14, Out 15–16 = Main L/R. Labels are trimmed and cut to 12 characters.
+- Blank fields use defaults in the scene: channel N takes console input N (routing Local 1–32 unless a group of 8 is needed for the stage box), names stay empty, and **outputs left blank send their matching mix bus (Out N = Bus N)** (user's choice, no Main L/R default).
+- **Output labels go to the console** through the feed: an output's label and colour are written to the bus, matrix or Main feeding it (an output with no feed counts as its matching bus). The first labelled output wins when several share one feed; Main L and R share the Main name.
+- **Label boxes allow 12 characters** (`maxlength="12"`, the console limit); placeholder stays plain "Label". Names are trimmed in the scene.
 - Scene: `DEF_TPL` (built-in neutral base scene), `planRouting()` (groups of 8 inputs, max 4), `buildScene()` (rewrites only names, colours, sources, routing, output feeds and, if `F48`, headamps), `scnPanel()` (routing preview), `zip1()` (wraps the .scn in a .zip for the Claude preview, whose downloads refuse `.scn`).
 
 ## How to make a change
