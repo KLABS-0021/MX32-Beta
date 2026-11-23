@@ -1,7 +1,7 @@
 /* MX32 Patch Sheet: offline cache.
    After the app is opened once with internet, it opens and works with no signal.
    When you change any file, raise VERSION so phones pick up the new copy. */
-var VERSION = "mx32-2026-11-19c";
+var VERSION = "mx32-2026-11-23a";
 var FILES = [
   "./",
   "index.html",
