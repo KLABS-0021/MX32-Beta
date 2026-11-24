@@ -802,7 +802,7 @@ async function exportSCN(b){var txt;try{txt=buildScene(cur,getTpl())}catch(x){sa
 
 /* ---------- WING snapshot (.snap) ----------
    Starts from the built-in base snapshot (wing-base.snap: the user's WING Edit 3.3.4 file, test name cleared)
-   and rewrites only: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in),
+   and rewrites only: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in), the same name/colour on the channel's source (io.in.<grp>.<n>.name / col, as WING Edit saves it),
    source mono/stereo (io.in.<grp>.<n>.mode "M"/"ST", both sources of the pair) for channels with a source,
    and output routing (io.out.<group>.<n>.grp / in). Everything else comes from the base.
    Keys checked against the WING Edit 3.3.4 snapshot (25 Nov 2026); not yet loaded on a real WING. */
@@ -814,13 +814,17 @@ function buildSnap(e,baseText){var d=JSON.parse(baseText),ae=d.ae_data,W=e.w,ins
     if(mode==="ST"){g[String(src.i)].mode="ST";if(g[String(pair)])g[String(pair)].mode="ST"}
     else if(g[String(src.i)].mode==="ST"){g[String(src.i)].mode="M";if(g[String(pair)])g[String(pair)].mode="M"}}
   [["c","ch"],["a","aux"]].forEach(function(z){W[z[0]].forEach(function(c,i){var t=ae[z[1]]&&ae[z[1]][String(i+1)];if(!t||!used(c))return;
-    t.name=scnStr(c.l,12);if(c.k>=0)t.col=c.k+1;var src=wcode(c.s);
-    if(src){t["in"].conn.grp=src.g;t["in"].conn["in"]=src.i;if(z[0]=="c")setMode(src,c.m?"ST":"M")}})});
+    var nm=scnStr(c.l,12);t.name=nm;if(c.k>=0)t.col=c.k+1;var src=wcode(c.s);
+    if(src){t["in"].conn.grp=src.g;t["in"].conn["in"]=src.i;if(z[0]=="c")setMode(src,c.m?"ST":"M")}
+    /* WING Edit shows and saves names/colours on the SOURCE, so write them there too (both sources of a stereo pair) */
+    var eff=src||{g:t["in"].conn.grp,i:t["in"].conn["in"]},sg=ins[eff.g],so=sg&&sg[String(eff.i)];
+    if(so){var list=[so];if(so.mode==="ST"){var pr=sg[String(eff.i%2?eff.i+1:eff.i-1)];if(pr)list.push(pr)}
+      list.forEach(function(x){if(nm)x.name=nm;if(c.k>=0)x.col=c.k+1})}})});
   WOUT.forEach(function(g){W.o[g[0]].forEach(function(o,i){var s=wcode(o.s),t=ae.io.out[g[0]]&&ae.io.out[g[0]][String(i+1)];if(s&&t){t.grp=s.g;t["in"]=s.i}})});
   return JSON.stringify(d)}
 function wingPanel(e){var c=wcount(e),W=e.w,h="",notes=[];
   h+='<div class="route">'+[["Channels",c.ch],["Aux in",c.aux],["Stereo sources",c.st],["Outputs patched",c.out]].map(function(t){return'<div class="rt'+(t[1]?" chg":"")+'"><span>'+t[0]+"</span><b>"+t[1]+"</b></div>"}).join("")+"</div>";
-  notes.push("Loading a snapshot replaces everything on the desk. Your names, colours, sources, mono/stereo and output patching go in; EQ, dynamics, faders, FX and the rest come from the built-in base snapshot.");
+  notes.push("Loading a snapshot replaces everything on the desk. Your names and colours (on each channel and its source, like WING Edit), sources, mono/stereo and output patching go in; EQ, dynamics, faders, FX and the rest come from the built-in base snapshot.");
   var nosrc=W.c.concat(W.a).filter(function(x){return used(x)&&!x.s}).length;if(nosrc)notes.push(nosrc+" filled-in channel"+(nosrc>1?"s have":" has")+" no source, so "+(nosrc>1?"they keep":"it keeps")+" the base source (channels 1–8 = Local 1–8, 9–40 off; aux 1 = USB 1, aux 2 = USB player).");
   notes.push("Outputs you leave blank keep the base patching: Local 1–6 = Bus 1–6, Local 7–8 = Main L / R.");
   var ol=0;WOUT.forEach(function(g){W.o[g[0]].forEach(function(o){if(o.l||o.k>=0)ol++})});if(ol)notes.push("Output labels and colours are for the patch sheet only. The desk gets the output patching.");
