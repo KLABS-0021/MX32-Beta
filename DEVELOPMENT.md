@@ -11,6 +11,7 @@ Read this first when continuing work on the app. It explains where everything is
 ## Files
 | File | What it is |
 |---|---|
+| `wing-base.snap` | Base WING snapshot the SNAP export builds on |
 | `index.html` | **The whole app**: HTML, CSS, JavaScript, the embedded logo and the built-in base scene. This file is the source of truth. |
 | `manifest.webmanifest`, `icon-180/192/512.png` | Home-screen install (name, icons, standalone display) |
 | `sw.js` | Offline cache (service worker). Saves the app, fonts, icons and PDF tool on the device after the first visit. |
@@ -32,7 +33,7 @@ Read this first when continuing work on the app. It explains where everything is
 - Delete needs a second tap on a small red "Confirm delete" button (resets after 4 s).
 - Tabs (M32/X32): Inputs (channels 1–32 only) · Aux & FX · Outputs (outputs 1–16 with colour) · Export.
 - Tabs (WING): Inputs (channels 1–40, with M/ST button) · Aux (1–8) · Outputs (Local 1–8, AES50 A/B/C 1–48, picked with a segmented bar) · Export.
-- Export: PDF plus one console-file button: SCN for M32/X32, SNIP (WING snippet) for WING. CSV was removed (25 Nov 2026, user's choice). Then input routing (or "What the snippet changes" for WING), previous events (Open / Duplicate) and this event (Duplicate / Delete).
+- Export: PDF plus one console-file button: SCN for M32/X32, SNAP (WING snapshot) for WING (the user chose a snapshot over a snippet, 25 Nov 2026). CSV was removed (25 Nov 2026, user's choice). Then input routing (or "What goes into the snapshot" for WING), previous events (Open / Duplicate) and this event (Duplicate / Delete).
 - Home page: "+ New event" opens a console chooser (Midas M32 / Behringer X32 / Behringer WING). No import.
 - Name limit is 12 characters for all consoles (user's choice; WING allows 16, can be raised later).
 - Layout: phone = one column; ≥720 px (iPad) = wider rows with notes inline, details in one row; ≥1100 px (desktop, iPad landscape) = sidebar with details and tabs.
@@ -55,7 +56,7 @@ Read this first when continuing work on the app. It explains where everything is
 - Screens: `renderHome()`, `renderEdit()`, `renderTab()`; rows `row()` (channel/aux/FX), `oout()` (outputs).
 - Events: one click / input / change listener on `#app` using `data-act`, `data-c`, `data-o`, `data-os`, `data-k` (colour), `data-n` (open picker), `data-t` (tab).
 - Saving files: `saveFile()` uses Claude's `downloads` capability inside the Claude preview, otherwise a normal browser download.
-- WING: `renderWing()`, rows `wrow()` / `wout()`, colour grid `wgrid()`; snippet `buildSnip()`, `wingPanel()`, `exportSNIP()`. The snippet is sparse JSON (`type "snippet.11"`, matching WING Edit 3.3.4 files), holding only what was filled in: `ae_data.ch|aux.<n>.name / col / in.conn.grp / in.conn.in` and `ae_data.io.out.<group>.<n>.grp / in`. Paths checked against a WING Edit 3.3.4 snapshot (25 Nov 2026): channel `in.conn`, `io.out` and Bus/Main L=odd, R=even all match. **Not yet loaded on a real WING.**
+- WING: `renderWing()`, rows `wrow()` / `wout()`, colour grid `wgrid()`; snapshot `getWBase()`, `buildSnap()`, `wingPanel()`, `exportSNAP()`. The export loads **`wing-base.snap`** (the user's WING Edit 3.3.4 snapshot `snapshot.11`, compact JSON, test name on Local 1 cleared), then rewrites only what was filled in: `ae_data.ch|aux.<n>.name / col / in.conn.grp / in.conn.in`, source mono/stereo `ae_data.io.in.<grp>.<n>.mode` ("M"/"ST", both sources of the odd/even pair, channels with a source only), and `ae_data.io.out.<group>.<n>.grp / in`. Blank items keep the base (ch 1–8 = Local 1–8, 9–40 OFF; aux 1 = USB 1, aux 2 = PLAY 1; Local out 1–6 = Bus 1–6 L, 7–8 = Main 1 L/R). To change the base, replace `wing-base.snap` and raise `VERSION` in `sw.js`. In the Claude preview the base is fetched from the live site. **Not yet loaded on a real WING.**
 - PDF: `loadPDF()`, `buildPDF()` (A4, dark header, tables with colour swatches).
 - Blank fields use defaults in the scene: channel N takes console input N (routing Local 1–32 unless a group of 8 is needed for the stage box), names stay empty, and **outputs left blank send their matching mix bus (Out N = Bus N)** (user's choice, no Main L/R default).
 - **Output labels go to the console** through the feed: an output's label and colour are written to the bus, matrix or Main feeding it (an output with no feed counts as its matching bus). The first labelled output wins when several share one feed; Main L and R share the Main name.

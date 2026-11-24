@@ -20,7 +20,7 @@ Made by Kirin™
 - Export:
   - **PDF** patch sheet to print or send to the stage crew
   - **SCN** (M32/X32) scene file to load on the console from a USB stick (names, colours, sources, input routing, output patching)
-  - **SNIP** (WING) snippet to load from Library › Snip. It only changes names, colours, sources and output patching, so the rest of the desk stays as it is. *Not yet tested on a real WING.*
+  - **SNAP** (WING) snapshot to load from Library › Snap (names, colours, sources, mono/stereo, output patching; everything else from a built-in base snapshot). Loading it replaces the whole desk. *Not yet tested on a real WING.*
 
 ## Phone, iPad and computer
 - The layout adapts to the screen: one column on phones, wider rows with notes beside each channel on iPad, and a sidebar on computers and iPad in landscape.
@@ -31,5 +31,5 @@ Made by Kirin™
 
 ## Notes
 - Your events are stored in the browser you use. Save a PDF now and then as a record.
-- Load a new scene or snippet into a spare slot on the console first and check it before a show.
+- Load a new scene or snapshot into a spare slot on the console first and check it before a show.
 - The whole app is `index.html`. Nothing to install or build.

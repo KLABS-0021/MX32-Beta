@@ -463,7 +463,7 @@ var WCN=["GBL","MBL","DBL","TRQ","GRN","OLV","YEL","ORG","RED","CRL","PNK","MAU"
 function wcs(i){return{n:WCN[i],f:WCF[i],b:WCB[i],t:WCT[i]}}
 function isW(e){e=e||cur;return!!e&&e.con==="WING"}
 /* source groups: [code used in the WING file, name shown, how many] */
-var WSRC=[["LCL","Local",24],["AUX","Aux in",8],["A","AES50 A",48],["B","AES50 B",48],["C","AES50 C",48],["SC","StageConnect",32],["USB","USB",48],["AES","AES/EBU",2]];
+var WSRC=[["LCL","Local",24],["AUX","Aux in",8],["A","AES50 A",48],["B","AES50 B",48],["C","AES50 C",48],["SC","StageConnect",32],["USB","USB",48],["PLAY","USB player",4],["AES","AES/EBU",2]];
 /* stereo mixes that can feed an output; each has an L and R leg */
 var WFEED=[["MAIN","Main",4],["BUS","Bus",16],["MTX","Matrix",8]];
 /* physical output groups shown on the Outputs tab */
@@ -622,9 +622,9 @@ function renderTab(){var v=$("view"),h="",k,N=all?32:8,e=cur;
     var p=w?wingPanel(e):scnPanel(e),others=DB.events.filter(function(x){return x.id!==e.id}).sort(function(a,b){return(b.dt||"").localeCompare(a.dt||"")||b.upd-a.upd});
     h="<h2>Export</h2>"+'<p class="sub" style="margin:0 0 10px">'+n+" of 48 inputs filled in. Your work saves on this device as you type.</p>"+'<div class="bar"><i style="width:'+Math.round(n/48*100)+'%"></i></div>'+
     '<div class="xg"><button class="xb" data-act="pdf"><b>PDF</b><span>Patch sheet</span></button>'+
-    (w?'<button class="xb" data-act="snip"'+(p.ok?"":" disabled")+'><b>SNIP</b><span>WING snippet</span></button>':'<button class="xb" data-act="scn"'+(p.ok?"":" disabled")+'><b>SCN</b><span>Console scene</span></button>')+
+    (w?'<button class="xb" data-act="snap"'+(p.ok?"":" disabled")+'><b>SNAP</b><span>WING snapshot</span></button>':'<button class="xb" data-act="scn"'+(p.ok?"":" disabled")+'><b>SCN</b><span>Console scene</span></button>')+
     '</div><p class="msg" id="msg" role="status"></p>'+
-    (w?"<h2>What the snippet changes</h2>":"<h2>Console input routing</h2>")+p.html+
+    (w?"<h2>What goes into the snapshot</h2>":"<h2>Console input routing</h2>")+p.html+
     "<h2>Previous events</h2>"+(others.length?'<div class="pl">'+others.map(function(x){var id=esc(x.id);return'<div class="pe"><div class="pm"><b>'+esc(x.ev||"Untitled event")+"</b><span>"+esc(fmtDate(x.dt))+(x.vn?" · "+esc(x.vn):"")+'</span></div><button data-act="open" data-id="'+id+'">Open</button><button data-act="dup" data-id="'+id+'">Duplicate</button></div>'}).join("")+"</div>":'<p class="sub" style="margin:0">No other events yet.</p>')+
     '<h2>This event</h2><div class="acts"><button class="ghost" data-act="dup" data-id="'+esc(e.id)+'">Duplicate event</button><button class="ghost del'+(arm?" arm":"")+'" data-act="del" data-id="'+esc(e.id)+'">'+(arm?"Confirm delete":"Delete event")+"</button></div>"}
   v.innerHTML=h;document.querySelectorAll("#tabs button").forEach(function(b,i){b.className=i==tab?"on":"";b.setAttribute("aria-selected",i==tab)})}
@@ -655,7 +655,7 @@ app.addEventListener("click",function(ev){var b=ev.target.closest("button");
   if(a==="venue"){var nm=$("vi").value.trim();if(!nm)return;var v=vget(),f=null;v.forEach(function(x){if(x.toLowerCase()===nm.toLowerCase())f=x});if(!f){vset(v.concat([nm]));f=nm}cur.vn=f;touch();$("vi").value="";$("nv").hidden=true;vr();return}
   if(a==="pdf")return exportPDF(b);
   if(a==="scn")return exportSCN(b);
-  if(a==="snip")return exportSNIP(b);
+  if(a==="snap")return exportSNAP(b);
   var kk=b.getAttribute("data-k");
   if(kk&&kk.charAt(0)==="w"){var zw=kk.split("|"),it,okey,ci;
     if(zw[0]==="wo"){it=cur.w.o[zw[1]][+zw[2]];okey=zw.slice(0,3).join("|");ci=+zw[3]}else{it=cur.w[zw[0].charAt(1)][+zw[1]];okey=zw[0]+"|"+zw[1];ci=+zw[2]}
@@ -800,36 +800,41 @@ async function exportSCN(b){var txt;try{txt=buildScene(cur,getTpl())}catch(x){sa
   else{res=await saveFile(fn,txt,"application/octet-stream");busy(b,false);
     say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the console into a spare scene slot.":"Couldn’t save the file. Try again.",res!=="saved")}}
 
-/* ---------- WING snippet (.snip) ----------
-   A snippet is a JSON file holding only the settings it changes; everything else on the desk stays as it is.
-   Written: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in), and output routing (io.out.<group>.<n>.grp / in).
-   Keys checked against a WING Edit 3.3.4 snapshot (25 Nov 2026); not yet loaded on a real WING. */
-var SNIP_TYPE="snippet.11",SNIP_FW="3.0.5-0-g0c2b9d4a:release";
-function buildSnip(e){var W=e.w,ae={},n=0,cnt={ch:0,aux:0,out:0};
-  [["c","ch"],["a","aux"]].forEach(function(z){W[z[0]].forEach(function(c,i){if(!used(c))return;var o={},nm=scnStr(c.l,12),src=wcode(c.s);
-    if(nm){o.name=nm;n++}if(c.k>=0){o.col=c.k+1;n++}if(src){o["in"]={conn:{grp:src.g,"in":src.i}};n+=2}
-    if(Object.keys(o).length){(ae[z[1]]=ae[z[1]]||{})[String(i+1)]=o;cnt[z[1]]++}})});
-  var out={};WOUT.forEach(function(g){W.o[g[0]].forEach(function(o,i){var s=wcode(o.s);if(!s)return;(out[g[0]]=out[g[0]]||{})[String(i+1)]={grp:s.g,"in":s.i};n+=2;cnt.out++})});
-  if(cnt.out)ae.io={out:out};
-  var d=new Date(),ts=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())+" "+p2(d.getHours())+":"+p2(d.getMinutes())+":"+p2(d.getSeconds());
-  var j={type:SNIP_TYPE,creator_fw:SNIP_FW,creator_sn:"NO_SERIAL",creator_model:"wing",creator_version:"",creator_name:"MX32 Patch Sheet",created:ts,active_show:"",active_scene:"",num_pars:n,ae_data:ae,ce_data:{},ae_globals:{},ce_globals:{}};
-  return{text:JSON.stringify(j,null,2),n:n,cnt:cnt}}
-function wingPanel(e){var s=buildSnip(e),W=e.w,h="",notes=[];
-  h+='<div class="route">'+[["Channels",s.cnt.ch],["Aux in",s.cnt.aux],["Outputs patched",s.cnt.out],["Settings",s.n]].map(function(t){return'<div class="rt'+(t[1]?" chg":"")+'"><span>'+t[0]+"</span><b>"+t[1]+"</b></div>"}).join("")+"</div>";
-  notes.push("The snippet only changes what you filled in: channel and aux names, colours and sources, and output patching. Your EQ, dynamics, faders and everything else on the desk stay as they are.");
-  var nosrc=W.c.concat(W.a).filter(function(c){return used(c)&&!c.s}).length;if(nosrc)notes.push(nosrc+" filled-in channel"+(nosrc>1?"s have":" has")+" no source, so "+(nosrc>1?"they keep":"it keeps")+" the source already set on the desk.");
-  if(W.c.some(function(c){return c.m}))notes.push("Mono / Stereo shows on the patch sheet only. Set stereo sources on the desk.");
+/* ---------- WING snapshot (.snap) ----------
+   Starts from the built-in base snapshot (wing-base.snap: the user's WING Edit 3.3.4 file, test name cleared)
+   and rewrites only: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in),
+   source mono/stereo (io.in.<grp>.<n>.mode "M"/"ST", both sources of the pair) for channels with a source,
+   and output routing (io.out.<group>.<n>.grp / in). Everything else comes from the base.
+   Keys checked against the WING Edit 3.3.4 snapshot (25 Nov 2026); not yet loaded on a real WING. */
+var WBASE="wing-base.snap",WBASE_WEB="https://klabs-0021.github.io/MX32-Beta/wing-base.snap",wbp=null;
+function getWBase(){if(!wbp)wbp=(async function(){var srcs=[WBASE,WBASE_WEB];for(var i=0;i<srcs.length;i++){try{var r=await fetch(srcs[i]);if(r.ok){var t=await r.text();JSON.parse(t);return t}}catch(x){}}wbp=null;throw new Error("base")})();return wbp}
+function wcount(e){var W=e.w,c={ch:0,aux:0,out:0,st:0};W.c.forEach(function(x){if(used(x)){c.ch++;if(x.m&&x.s)c.st++}});W.a.forEach(function(x){if(used(x))c.aux++});WOUT.forEach(function(g){W.o[g[0]].forEach(function(o){if(wcode(o.s))c.out++})});return c}
+function buildSnap(e,baseText){var d=JSON.parse(baseText),ae=d.ae_data,W=e.w,ins=ae.io["in"];
+  function setMode(src,mode){var g=ins[src.g];if(!g||!g[String(src.i)])return;var pair=src.i%2?src.i+1:src.i-1;
+    if(mode==="ST"){g[String(src.i)].mode="ST";if(g[String(pair)])g[String(pair)].mode="ST"}
+    else if(g[String(src.i)].mode==="ST"){g[String(src.i)].mode="M";if(g[String(pair)])g[String(pair)].mode="M"}}
+  [["c","ch"],["a","aux"]].forEach(function(z){W[z[0]].forEach(function(c,i){var t=ae[z[1]]&&ae[z[1]][String(i+1)];if(!t||!used(c))return;
+    t.name=scnStr(c.l,12);if(c.k>=0)t.col=c.k+1;var src=wcode(c.s);
+    if(src){t["in"].conn.grp=src.g;t["in"].conn["in"]=src.i;if(z[0]=="c")setMode(src,c.m?"ST":"M")}})});
+  WOUT.forEach(function(g){W.o[g[0]].forEach(function(o,i){var s=wcode(o.s),t=ae.io.out[g[0]]&&ae.io.out[g[0]][String(i+1)];if(s&&t){t.grp=s.g;t["in"]=s.i}})});
+  return JSON.stringify(d)}
+function wingPanel(e){var c=wcount(e),W=e.w,h="",notes=[];
+  h+='<div class="route">'+[["Channels",c.ch],["Aux in",c.aux],["Stereo sources",c.st],["Outputs patched",c.out]].map(function(t){return'<div class="rt'+(t[1]?" chg":"")+'"><span>'+t[0]+"</span><b>"+t[1]+"</b></div>"}).join("")+"</div>";
+  notes.push("Loading a snapshot replaces everything on the desk. Your names, colours, sources, mono/stereo and output patching go in; EQ, dynamics, faders, FX and the rest come from the built-in base snapshot.");
+  var nosrc=W.c.concat(W.a).filter(function(x){return used(x)&&!x.s}).length;if(nosrc)notes.push(nosrc+" filled-in channel"+(nosrc>1?"s have":" has")+" no source, so "+(nosrc>1?"they keep":"it keeps")+" the base source (channels 1–8 = Local 1–8, 9–40 off; aux 1 = USB 1, aux 2 = USB player).");
+  notes.push("Outputs you leave blank keep the base patching: Local 1–6 = Bus 1–6, Local 7–8 = Main L / R.");
   var ol=0;WOUT.forEach(function(g){W.o[g[0]].forEach(function(o){if(o.l||o.k>=0)ol++})});if(ol)notes.push("Output labels and colours are for the patch sheet only. The desk gets the output patching.");
-  notes.push("Test first: this snippet hasn’t been checked on a real WING yet. Load it when no show is running and check a few channels.");
+  notes.push("Test first: load it into a spare snapshot slot when no show is running, and check a few channels.");
   h+='<div class="note">'+notes.map(function(t){return"<p>"+esc(t)+"</p>"}).join("")+"</div>";
-  return{html:h,ok:s.n>0}}
-async function exportSNIP(b){var s=buildSnip(cur);if(!s.n){say("Fill in at least one channel or output first.",true);return}
-  busy(b,true);var base=safeName(cur.ev).slice(0,24),fn=base+".snip",dl=await getDL(),res;
-  if(dl){res=await saveFile(base+"-snippet.zip",zip1(fn,s.text),"application/zip");busy(b,false);
-    say(res==="saved"?"Saved a .zip with "+fn+" inside. Unzip it, copy the .snip file to a USB stick, then load it on the WING from Library › Snip.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
-  else{res=await saveFile(fn,s.text,"application/json");busy(b,false);
-    say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the WING from Library › Snip.":"Couldn’t save the file. Try again.",res!=="saved")}}
-
+  return{html:h,ok:c.ch+c.aux+c.out>0}}
+async function exportSNAP(b){busy(b,true);var base;
+  try{base=await getWBase()}catch(x){busy(b,false);say("Couldn’t load the WING base snapshot. Open the app once with internet and try again.",true);return}
+  var txt;try{txt=buildSnap(cur,base)}catch(x){console.error(x);busy(b,false);say("Couldn’t make the snapshot.",true);return}
+  var nm=safeName(cur.ev).slice(0,24),fn=nm+".snap",dl=await getDL(),res;
+  if(dl){res=await saveFile(nm+"-snapshot.zip",zip1(fn,txt),"application/zip");busy(b,false);
+    say(res==="saved"?"Saved a .zip with "+fn+" inside. Unzip it, copy the .snap file to a USB stick, then load it on the WING from Library › Snap.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
+  else{res=await saveFile(fn,txt,"application/json");busy(b,false);
+    say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the WING from Library › Snap into a spare slot.":"Couldn’t save the file. Try again.",res!=="saved")}}
 
 render();
 /* Offline: keep a copy of the app on the device (needs https, so not in the Claude preview) */
