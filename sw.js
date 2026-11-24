@@ -1,7 +1,7 @@
 /* MXW Patch Sheet: offline cache.
    After the app is opened once with internet, it opens and works with no signal.
    When you change any file, raise VERSION so phones pick up the new copy. */
-var VERSION = "mx32-2026-11-25-mxw2";
+var VERSION = "mx32-2026-11-25-mxw3";
 var FILES = [
   "./",
   "index.html",

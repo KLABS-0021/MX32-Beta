@@ -822,7 +822,8 @@ function buildSnap(e,baseText){var d=JSON.parse(baseText),ae=d.ae_data,W=e.w,ins
     if(so){var list=[so];if(so.mode==="ST"){var pr=sg[String(eff.i%2?eff.i+1:eff.i-1)];if(pr)list.push(pr)}
       list.forEach(function(x){if(nm)x.name=nm;if(c.k>=0)x.col=c.k+1})}})});
   WOUT.forEach(function(g){W.o[g[0]].forEach(function(o,i){var s=wcode(o.s),t=ae.io.out[g[0]]&&ae.io.out[g[0]][String(i+1)];if(s&&t){t.grp=s.g;t["in"]=s.i}})});
-  return JSON.stringify(d)}
+  /* same layout as WING Edit: 2-space indent, Windows line endings */
+  return JSON.stringify(d,null,2).replace(/\n/g,"\r\n")}
 function wingPanel(e){var c=wcount(e),W=e.w,h="",notes=[];
   h+='<div class="route">'+[["Channels",c.ch],["Aux in",c.aux],["Stereo sources",c.st],["Outputs patched",c.out]].map(function(t){return'<div class="rt'+(t[1]?" chg":"")+'"><span>'+t[0]+"</span><b>"+t[1]+"</b></div>"}).join("")+"</div>";
   notes.push("Loading a snapshot replaces everything on the desk. Your names and colours (on each channel and its source, like WING Edit), sources, mono/stereo and output patching go in; EQ, dynamics, faders, FX and the rest come from the built-in base snapshot.");
@@ -838,7 +839,7 @@ async function exportSNAP(b){busy(b,true);var base;
   var nm=safeName(cur.ev).slice(0,24),fn=nm+".snap",dl=await getDL(),res;
   if(dl){res=await saveFile(nm+"-snapshot.zip",zip1(fn,txt),"application/zip");busy(b,false);
     say(res==="saved"?"Saved a .zip with "+fn+" inside. Unzip it, copy the .snap file to a USB stick, then load it on the WING from Library › Snap.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
-  else{res=await saveFile(fn,txt,"application/json");busy(b,false);
+  else{res=await saveFile(fn,txt,"application/octet-stream");busy(b,false);
     say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the WING from Library › Snap into a spare slot.":"Couldn’t save the file. Try again.",res!=="saved")}}
 
 render();
