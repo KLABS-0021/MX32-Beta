@@ -1,4 +1,4 @@
-# MX32 Patch Sheet (Beta)
+# MXW Patch Sheet (Beta)
 
 Patch lists for the Midas M32, Behringer X32 and Behringer WING, in one web page that works on a phone, iPad or computer. Dark space grey design with a brushed-metal finish.
 
