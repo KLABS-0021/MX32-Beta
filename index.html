@@ -803,8 +803,8 @@ async function exportSCN(b){var txt;try{txt=buildScene(cur,getTpl())}catch(x){sa
 /* ---------- WING snippet (.snip) ----------
    A snippet is a JSON file holding only the settings it changes; everything else on the desk stays as it is.
    Written: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in), and output routing (io.out.<group>.<n>.grp / in).
-   Channel parts follow published WING snapshot keys; the output part is NOT yet confirmed on a real WING. */
-var SNIP_TYPE="snippet.10",SNIP_FW="3.0.5-0-g0c2b9d4a:release";
+   Keys checked against a WING Edit 3.3.4 snapshot (25 Nov 2026); not yet loaded on a real WING. */
+var SNIP_TYPE="snippet.11",SNIP_FW="3.0.5-0-g0c2b9d4a:release";
 function buildSnip(e){var W=e.w,ae={},n=0,cnt={ch:0,aux:0,out:0};
   [["c","ch"],["a","aux"]].forEach(function(z){W[z[0]].forEach(function(c,i){if(!used(c))return;var o={},nm=scnStr(c.l,12),src=wcode(c.s);
     if(nm){o.name=nm;n++}if(c.k>=0){o.col=c.k+1;n++}if(src){o["in"]={conn:{grp:src.g,"in":src.i}};n+=2}
