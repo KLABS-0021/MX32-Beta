@@ -1,6 +1,6 @@
 # MX32 Patch Sheet (Beta)
 
-Patch lists for the Midas M32 and Behringer X32, in one web page that works on a phone, iPad or computer. Dark space grey design with a brushed-metal finish.
+Patch lists for the Midas M32, Behringer X32 and Behringer WING, in one web page that works on a phone, iPad or computer. Dark space grey design with a brushed-metal finish.
 
 Made by Kirin™
 
@@ -8,13 +8,19 @@ Made by Kirin™
 
 ## What it does
 - Saves multiple events (name, date, venue, console) on your device
-- Inputs: 32 channels with label, source (Local, AES50 A/B), scribble-strip colour and notes
-- Aux in and FX returns on their own tab
-- Outputs 1–16 with label, colour and feed (bus, mains or matrix)
+- "New event" asks which console: **Midas M32**, **Behringer X32** or **Behringer WING**
+- **M32 / X32**
+  - Inputs: 32 channels with label, source (Local, AES50 A/B), scribble-strip colour and notes
+  - Aux in and FX returns on their own tab
+  - Outputs 1–16 with label, colour and feed (bus, mains or matrix)
+- **WING**
+  - Inputs: 40 channels with label, source (Local, Aux, AES50 A/B/C, StageConnect, USB, AES/EBU), WING colour (12), mono/stereo and notes
+  - Aux in 1–8
+  - Outputs: Local 1–8 and AES50 A, B, C 1–48, each with label, colour and feed (Main, Bus, Matrix L/R, or a direct input split)
 - Export:
   - **PDF** patch sheet to print or send to the stage crew
-  - **SCN** scene file to load on the console from a USB stick (names, colours, sources, input routing, output patching)
-  - **CSV** for Excel, Numbers or Google Sheets
+  - **SCN** (M32/X32) scene file to load on the console from a USB stick (names, colours, sources, input routing, output patching)
+  - **SNIP** (WING) snippet to load from Library › Snip. It only changes names, colours, sources and output patching, so the rest of the desk stays as it is. *Not yet tested on a real WING.*
 
 ## Phone, iPad and computer
 - The layout adapts to the screen: one column on phones, wider rows with notes beside each channel on iPad, and a sidebar on computers and iPad in landscape.
@@ -24,6 +30,6 @@ Made by Kirin™
   - Computer (Chrome / Edge): the install icon in the address bar
 
 ## Notes
-- Your events are stored in the browser you use. Export a CSV now and then as a backup.
-- Load a new scene into a spare scene slot on the console first and check it before a show.
+- Your events are stored in the browser you use. Save a PDF now and then as a record.
+- Load a new scene or snippet into a spare slot on the console first and check it before a show.
 - The whole app is `index.html`. Nothing to install or build.

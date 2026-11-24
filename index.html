@@ -124,7 +124,7 @@ h2::after{order:2}
 .note.e{border-color:var(--rd);background:var(--rdb);color:var(--rd)}
 .note ul{margin:6px 0;padding-left:18px}
 .acts.one{grid-template-columns:1fr}
-.xg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.xg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .xb{height:auto;min-height:74px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:var(--ac);color:var(--ac2);border-color:var(--ac);border-radius:14px;box-shadow:0 10px 24px -12px var(--ac)}
 .xb b{font:700 22px/1 "Barlow Condensed",Barlow,sans-serif;letter-spacing:.05em}
 .xb span{font-size:12.5px;font-weight:600;opacity:.85}
@@ -417,10 +417,22 @@ h2{border-bottom-color:#8e939b;color:var(--mu)}
 @media (min-width:720px){.brand .logo{width:68px;height:68px}}
 .eva .del.arm{color:#fff!important;background:var(--rd)!important;height:30px;align-self:center;padding:0 10px!important;text-decoration:none;border-radius:2px;font-weight:600}
 .ghost.del.arm{color:#fff!important}
+/* ===== WING additions ===== */
+.g.w12{grid-template-columns:repeat(6,1fr)}
+@media (min-width:720px){.g.w12{grid-template-columns:repeat(12,1fr)}}
+.ms{width:44px;padding:0!important;justify-content:center}.ms::before{display:none}
+.seg{display:flex;flex-wrap:wrap;margin:14px 0 0;border:1px solid var(--bd2)}
+.seg button{flex:1;min-width:70px;border:0;border-radius:0;height:38px;background:transparent;color:var(--mu);font:500 12.5px/1 "IBM Plex Mono",monospace}
+.seg button+button{border-left:1px solid var(--bd2)}
+.seg button.on{background:var(--metal);color:#16181b}
+.pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px;padding:12px;border:1px solid var(--bd2);background:var(--sf)}
+.pick p{grid-column:1/-1;margin:0 0 2px;font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--mu)}
+.pick button{height:auto;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:600;border-radius:0}
+.pick button span{font:400 11px/1 "IBM Plex Mono",monospace;color:var(--mu)}
+@media (max-width:420px){.pick{grid-template-columns:1fr}}
 
 </style></head><body>
 <div class="w" id="app"></div>
-<input type="file" id="file" accept=".csv,text/csv" hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 "use strict";
@@ -437,27 +449,53 @@ function today(){var d=new Date();return d.getFullYear()+"-"+p2(d.getMonth()+1)+
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function pdate(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?new Date(+m[1],m[2]-1,+m[3]):null}
 function fmtDate(s,long){var d=pdate(s);if(!d)return"No date";try{return d.toLocaleDateString("en-GB",long?{weekday:"long",day:"numeric",month:"long",year:"numeric"}:{weekday:"short",day:"numeric",month:"short",year:"numeric"})}catch(e){return s}}
-function conName(c){return c==="M32"?"Midas M32":c==="X32"?"Behringer X32":""}
+function conName(c){return c==="M32"?"Midas M32":c==="X32"?"Behringer X32":c==="WING"?"Behringer WING":""}
 function safeName(s){return(s||"event").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")||"event"}
 
 /* ---------- colours ---------- */
 var CN=["OFF","RD","GN","YE","BL","MG","CY","WH"],CB=["#1a1a1a","#e53935","#43a047","#fdd835","#1e88e5","#c026d3","#00bcd4","#f5f5f5"],CT=["#fff","#fff","#fff","#000","#fff","#fff","#000","#000"];
 function cs(i){var j=i%8;if(i<8)return{n:CN[j],b:CB[j],t:CT[j]};if(j==0)return{n:"OFFi",b:"#9e9e9e",t:"#1a1a1a"};if(j==7)return{n:"WHi",b:"#3a3a3a",t:"#f5f5f5"};return{n:CN[j]+"i",b:"#ececec",t:CB[j]}}
-var COLOURS=[];for(var ci=0;ci<16;ci++)COLOURS.push(cs(ci).n.toLowerCase());
+/* ---------- WING: 12 colours, sources, outputs ---------- */
+var WCN=["GBL","MBL","DBL","TRQ","GRN","OLV","YEL","ORG","RED","CRL","PNK","MAU"],
+  WCF=["Grey blue","Medium blue","Dark blue","Turquoise","Green","Olive green","Yellow","Orange","Red","Coral","Pink","Mauve"],
+  WCB=["#7f8ca6","#3f7fe0","#2c3fb0","#1fb7c6","#3dab45","#8a9a2c","#f2d230","#f28a22","#e23b3b","#f2796b","#e95aa9","#9a6bd1"],
+  WCT=["#000","#fff","#fff","#000","#fff","#fff","#000","#000","#fff","#000","#000","#fff"];
+function wcs(i){return{n:WCN[i],f:WCF[i],b:WCB[i],t:WCT[i]}}
+function isW(e){e=e||cur;return!!e&&e.con==="WING"}
+/* source groups: [code used in the WING file, name shown, how many] */
+var WSRC=[["LCL","Local",24],["AUX","Aux in",8],["A","AES50 A",48],["B","AES50 B",48],["C","AES50 C",48],["SC","StageConnect",32],["USB","USB",48],["AES","AES/EBU",2]];
+/* stereo mixes that can feed an output; each has an L and R leg */
+var WFEED=[["MAIN","Main",4],["BUS","Bus",16],["MTX","Matrix",8]];
+/* physical output groups shown on the Outputs tab */
+var WOUT=[["LCL","Local",8],["A","AES50 A",48],["B","AES50 B",48],["C","AES50 C",48]];
+function mkW(n){var a=[];for(var i=0;i<n;i++)a.push({l:"",s:"",n:"",k:-1,m:0});return a}
+function mkO(n){var a=[];for(var i=0;i<n;i++)a.push({l:"",s:"",k:-1});return a}
+function blankW(){var o={};WOUT.forEach(function(g){o[g[0]]=mkO(g[2])});return{c:mkW(40),a:mkW(8),o:o}}
+function k12(v){v=parseInt(v,10);return v>=0&&v<12?v:-1}
+function normW(w){var o=blankW();w=w||{};
+  ["c","a"].forEach(function(g){var src=Array.isArray(w[g])?w[g]:[];o[g]=o[g].map(function(_,j){var x=src[j]||{};return{l:String(x.l||""),s:String(x.s||""),n:String(x.n||""),k:k12(x.k),m:x.m?1:0}})});
+  var wo=w.o||{};WOUT.forEach(function(g){var src=Array.isArray(wo[g[0]])?wo[g[0]]:[];o.o[g[0]]=o.o[g[0]].map(function(_,j){var x=src[j]||{};return{l:String(x.l||""),s:String(x.s||""),k:k12(x.k)}})});
+  return o}
+function oused(o){return!!(o.l||o.s||o.k>=0)}
+function wcode(s){var m=/^([A-Z]+)\.(\d+)$/.exec(s||"");return m?{g:m[1],i:+m[2]}:null}
+function wsname(s){var c=wcode(s),r="";if(!c)return"";WSRC.forEach(function(g){if(g[0]==c.g)r=g[1]+" "+c.i});return r}
+function wfname(s){var c=wcode(s),r="";if(!c)return"";WFEED.forEach(function(g){if(g[0]==c.g)r=g[1]+" "+Math.ceil(c.i/2)+" "+(c.i%2?"L":"R")});return r||wsname(s)}
+function woname(g,k){var r="";WOUT.forEach(function(x){if(x[0]==g)r=x[1]+" "+(k+1)});return r}
 
 /* ---------- data ---------- */
 function mk(n){var a=[];for(var i=0;i<n;i++)a.push({l:"",s:"",p:0,n:"",k:-1});return a}
-function blank(){var t=Date.now();return{id:uid(),ev:"",dt:today(),vn:"",con:"",c:mk(32),a:mk(8),f:mk(8),ol:[],os:[],ok:[],bl:[],ml:[],xl:[],created:t,upd:t}}
+function blank(){var t=Date.now();return{id:uid(),ev:"",dt:today(),vn:"",con:"",c:mk(32),a:mk(8),f:mk(8),ol:[],os:[],ok:[],bl:[],ml:[],xl:[],w:blankW(),created:t,upd:t}}
 function norm(e){e=e||{};var o=blank();
   ["id","ev","dt","vn","con"].forEach(function(k){if(typeof e[k]==="string"&&e[k])o[k]=e[k]});
-  if(o.con!=="M32"&&o.con!=="X32")o.con="";
+  if(o.con!=="M32"&&o.con!=="X32"&&o.con!=="WING")o.con="";
+  o.w=normW(e.w);
   if(typeof e.created==="number")o.created=e.created;if(typeof e.upd==="number")o.upd=e.upd;
   [["c",32],["a",8],["f",8]].forEach(function(z){var src=Array.isArray(e[z[0]])?e[z[0]]:[];o[z[0]]=o[z[0]].map(function(_,j){var x=src[j]||{};var k=parseInt(x.k,10);return{l:String(x.l||""),s:String(x.s||""),p:x.p?1:0,n:String(x.n||""),k:k>=0&&k<16?k:-1}})});
   ["ol","os","bl","ml","xl"].forEach(function(k){o[k]=Array.isArray(e[k])?e[k].map(function(v){return v==null?"":String(v)}):[]});
   o.ok=Array.isArray(e.ok)?e.ok.map(function(v){v=parseInt(v,10);return v>=0&&v<16?v:-1}):[];
   return o}
 function used(c){return!!(c.l||c.s||c.n||c.k>=0||c.p)}
-function filled(e){return e.c.filter(used).length+e.a.filter(used).length+e.f.filter(used).length}
+function filled(e){if(e.con==="WING")return e.w.c.filter(used).length+e.w.a.filter(used).length;return e.c.filter(used).length+e.a.filter(used).length+e.f.filter(used).length}
 
 /* ---------- storage ---------- */
 var storeOK=true,mem={};
@@ -478,7 +516,7 @@ function vget(){try{var v=JSON.parse(lsGet(VK)||"null");if(Array.isArray(v))retu
 function vset(v){lsSet(VK,JSON.stringify(v))}
 
 /* ---------- state ---------- */
-var view="home",cur=null,tab=0,all=false,open={},delArm=null,delTimer=null;
+var view="home",cur=null,tab=0,all=false,open={},delArm=null,delTimer=null,pick=false,ogrp="LCL",oall=false;
 var app=$("app");
 function setCon(c){document.documentElement.setAttribute("data-con",c||"")}
 function toast(t,err){var el=$("toast");el.textContent=t;el.className="toast show"+(err?" e":"");clearTimeout(toast.t);toast.t=setTimeout(function(){el.className="toast"},3200)}
@@ -497,6 +535,10 @@ function bopts(sel){var h='<option value="">Bus</option><optgroup label="Mix bus
   for(i=1;i<=16;i++){t=cur.bl[i-1]?" · "+cur.bl[i-1].slice(0,10):"";h+=opt("B"+i,"Bus "+i+esc(t),sel)}
   h+='</optgroup><optgroup label="Main">'+opt("ML","Main L",sel)+opt("MR","Main R",sel)+opt("MC","Mono",sel)+'</optgroup><optgroup label="Matrix">';
   for(i=1;i<=6;i++)h+=opt("X"+i,"Matrix "+i,sel);return h+"</optgroup>"}
+function wopts(sel,ph){var h='<option value="">'+(ph||"Source")+"</option>";WSRC.forEach(function(g){h+='<optgroup label="'+g[1]+'">';for(var i=1;i<=g[2];i++)h+=opt(g[0]+"."+i,g[1]+" "+i,sel);h+="</optgroup>"});return h}
+function wfopts(sel){var h='<option value="">Feed</option>';
+  WFEED.forEach(function(g){h+='<optgroup label="'+g[1]+'">';for(var n=1;n<=g[2];n++){h+=opt(g[0]+"."+(n*2-1),g[1]+" "+n+" L",sel)+opt(g[0]+"."+(n*2),g[1]+" "+n+" R",sel)}h+="</optgroup>"});
+  WSRC.forEach(function(g){h+='<optgroup label="Direct: '+g[1]+'">';for(var i=1;i<=g[2];i++)h+=opt(g[0]+"."+i,g[1]+" "+i,sel);h+="</optgroup>"});return h}
 function sname(g,s){if(!s)return"";var t=s.charAt(0),n=s.slice(1);if(g=="c")return t=="L"?"Local "+n:t=="A"?"AES50 A "+n:"AES50 B "+n;if(g=="a")return s=="UL"?"USB L":s=="UR"?"USB R":"Aux "+n;return"FX slot "+n}
 function bname(s){if(!s)return"";if(s=="ML")return"Main L";if(s=="MR")return"Main R";if(s=="MC")return"Mono";return(s.charAt(0)=="B"?"Bus ":"Matrix ")+s.slice(1)}
 function inRange(n,a,b){return n>=a&&n<=b}
@@ -510,14 +552,15 @@ function bcode(v){v=(v||"").toLowerCase().replace(/\s+/g," ").trim();var m;
   if((m=/^bus (\d+)$/.exec(v))&&inRange(+m[1],1,16))return"B"+(+m[1]);if((m=/^matrix (\d+)$/.exec(v))&&inRange(+m[1],1,6))return"X"+(+m[1]);return""}
 
 /* ---------- rendering ---------- */
-function header(){return'<div class="top"><div class="brand">'+ICON+'<div><span class="kick">MX32 · M32 / X32</span><h1>Patch Sheet</h1></div></div><span class="beta">BETA</span></div>'}
+function header(){return'<div class="top"><div class="brand">'+ICON+'<div><span class="kick">MX32 · M32 / X32 / WING</span><h1>Patch Sheet</h1></div></div><span class="beta">BETA</span></div>'}
 function footer(){return'<footer class="foot"><span class="mk">Powered by Kirox</span><small>© All rights reserved</small></footer>'}
 function render(){if(view==="home")renderHome();else renderEdit()}
 
 function renderHome(){setCon("");app.className="w home";
   var list=DB.events.slice().sort(function(a,b){return(b.dt||"").localeCompare(a.dt||"")||b.upd-a.upd});
   var h=header()+'<div class="hrow"><h2 class="ht">Events</h2><button class="pri sm" data-act="new"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"></path></svg>New event</button></div>';
-  if(!storeOK)h+='<p class="warn">This browser isn’t letting the app save. Your events will be lost when you close it, so export a CSV to keep your work.</p>';
+  if(pick)h+='<div class="pick"><p>WHICH CONSOLE?</p>'+[["M32","Midas M32","32 channels"],["X32","Behringer X32","32 channels"],["WING","Behringer WING","40 channels"]].map(function(c){return'<button data-act="newc" data-con="'+c[0]+'">'+c[1]+"<span>"+c[2]+"</span></button>"}).join("")+"</div>";
+  if(!storeOK)h+='<p class="warn">This browser isn’t letting the app save. Your events will be lost when you close it, so save a PDF to keep your work.</p>';
   if(!list.length)h+='<div class="empty"><b>No events yet</b><p>Tap “New event” to start your first patch list.</p></div>';
   else h+='<div class="tbl"><div class="th"><span>Date</span><span>Show</span><span class="tr">In</span></div>'+list.map(evCard).join("")+"</div>";
   app.innerHTML=h+footer()}
@@ -530,8 +573,8 @@ function renderEdit(){var e=cur;setCon(e.con);
   '<div class="card det"><div class="fl"><input type="text" id="ev" data-f="ev" placeholder="Event name" aria-label="Event name"></div>'+
   '<div class="fl"><input type="date" id="dt" data-f="dt" aria-label="Event date"><select id="vs" aria-label="Venue"></select></div>'+
   '<div class="fl" id="nv" hidden><input type="text" id="vi" placeholder="New venue name" aria-label="New venue name"><button id="vb" data-act="venue" style="flex:none">Save venue</button></div>'+
-  '<div class="fl" style="margin:0"><select id="cs" data-f="con" aria-label="Console"><option value="">Console</option><option value="M32">Midas M32</option><option value="X32">Behringer X32</option></select></div></div>'+
-  '<div class="tabs" id="tabs">'+["Inputs","Aux & FX","Outputs","Export"].map(function(t,i){return'<button data-t="'+i+'">'+t+"</button>"}).join("")+'</div></aside><div class="card main" id="view"></div>'+footer();
+  '<div class="fl" style="margin:0"><select id="cs" data-f="con" aria-label="Console"><option value="">Console</option><option value="M32">Midas M32</option><option value="X32">Behringer X32</option><option value="WING">Behringer WING</option></select></div></div>'+
+  '<div class="tabs" id="tabs">'+(isW(e)?["Inputs","Aux","Outputs","Export"]:["Inputs","Aux & FX","Outputs","Export"]).map(function(t,i){return'<button data-t="'+i+'">'+t+"</button>"}).join("")+'</div></aside><div class="card main" id="view"></div>'+footer();
   $("ev").value=e.ev;$("dt").value=e.dt;$("cs").value=e.con;$("crumb").textContent=e.ev||"Untitled event";vr();renderTab()}
 function vr(){var v=vget(),h='<option value="">Venue</option>';if(cur.vn&&v.indexOf(cur.vn)<0)v=v.concat([cur.vn]);
   v.forEach(function(x){h+='<option value="'+esc(x)+'"'+(x===cur.vn?" selected":"")+">"+esc(x)+"</option>"});$("vs").innerHTML=h+'<option value="__new">+ New venue</option>'}
@@ -549,15 +592,39 @@ function oout(k){var key="o|"+k,kc=cur.ok[k]==null?-1:cur.ok[k],st="",h="";
   if(open[key]){h='<div class="g">';for(var i=0;i<16;i++){var q=cs(i);h+='<button data-k="'+key+"|"+i+'" aria-label="Colour '+q.n+'" aria-pressed="'+(kc==i)+'" style="background:'+q.b+";color:"+q.t+";"+(kc==i?"outline:2px solid var(--tx);outline-offset:1px":"")+'">'+q.n+"</button>"}h+="</div>"}
   return'<div class="r"><div class="rl"><span class="cn">'+p2(k+1)+'</span><button class="n dot'+(kc>=8&&kc<15?" inv":"")+'" data-n="'+key+'"'+st+' aria-expanded="'+!!open[key]+'" aria-label="Colour for output '+(k+1)+'"></button><input type="text" data-o="o|'+k+'" value="'+esc(cur.ol[k]||"")+'" maxlength="12" placeholder="Label" aria-label="Output '+(k+1)+' label"><select data-os="'+k+'" aria-label="Output '+(k+1)+' bus">'+bopts(cur.os[k]||"")+"</select></div>"+h+"</div>"}
 
+/* WING rows. Colour keys: "wc|k" channel, "wa|k" aux, "wo|LCL|k" output */
+function wgrid(key,kc){var h='<div class="g w12">';for(var i=0;i<12;i++){var q=wcs(i);h+='<button data-k="'+key+"|"+i+'" aria-label="Colour '+q.f+'" title="'+q.f+'" aria-pressed="'+(kc==i)+'" style="background:'+q.b+";color:"+q.t+";"+(kc==i?"outline:2px solid var(--tx);outline-offset:1px":"")+'">'+q.n+"</button>"}return h+"</div>"}
+function wdot(key,kc,lab){var st="";if(kc>=0){var s=wcs(kc);st=' style="background:'+s.b+";color:"+s.t+";border-color:"+s.b+'"'}
+  return'<button class="n dot" data-n="'+key+'"'+st+' aria-expanded="'+!!open[key]+'" aria-label="Colour for '+lab+'"></button>'}
+function wrow(g,k){var c=cur.w[g][k],key="w"+g+"|"+k,lab=(g=="c"?"channel ":"aux ")+(k+1),h="";
+  if(open[key])h=wgrid(key,c.k)+'<input type="text" class="nt" data-w="'+g+"|n|"+k+'" value="'+esc(c.n)+'" placeholder="Notes (mic, stand, who it’s for…)" aria-label="Notes">';
+  return'<div class="r"><div class="rl"><span class="cn">'+p2(k+1)+(c.n?"<i>•</i>":"")+"</span>"+wdot(key,c.k,lab)+
+  '<input type="text" data-w="'+g+"|l|"+k+'" value="'+esc(c.l)+'" maxlength="12" placeholder="Label" aria-label="Label, up to 12 characters"><select data-w="'+g+"|s|"+k+'" aria-label="Source">'+wopts(c.s)+"</select>"+
+  (g=="c"?'<button class="v ms'+(c.m?" on":"")+'" data-ms="'+k+'" aria-pressed="'+!!c.m+'" aria-label="Mono or stereo, channel '+(k+1)+'">'+(c.m?"ST":"M")+"</button>":"")+
+  '<input type="text" class="ni" data-w="'+g+"|n|"+k+'" value="'+esc(c.n)+'" placeholder="Notes" aria-label="Notes"></div>'+h+"</div>"}
+function wout(gk,k){var o=cur.w.o[gk][k],key="wo|"+gk+"|"+k,lab=woname(gk,k);
+  return'<div class="r"><div class="rl"><span class="cn">'+p2(k+1)+"</span>"+wdot(key,o.k,"output "+lab)+
+  '<input type="text" data-wo="'+gk+"|l|"+k+'" value="'+esc(o.l)+'" maxlength="12" placeholder="Label" aria-label="'+lab+' label"><select data-wo="'+gk+"|s|"+k+'" aria-label="'+lab+' feed">'+wfopts(o.s)+"</select></div>"+(open[key]?wgrid(key,o.k):"")+"</div>"}
+function renderWing(){var h="",k,e=cur,W=e.w;
+  if(tab==0){var N=all?40:8;h+="<h2>Channels 1 to 40</h2>";for(k=0;k<N;k++)h+=wrow("c",k);h+='<button class="ghost" data-act="all">'+(all?"Show first 8 channels":"Show all 40 channels")+"</button>"}
+  if(tab==1){h+="<h2>Aux in 1 to 8</h2>";for(k=0;k<8;k++)h+=wrow("a",k)}
+  if(tab==2){var g=WOUT.filter(function(x){return x[0]==ogrp})[0]||WOUT[0],n=g[2],sh=g[2]>16&&!oall?16:n;
+    h+='<h2>Outputs</h2><div class="seg">'+WOUT.map(function(x){var c=W.o[x[0]].filter(oused).length;return'<button data-og="'+x[0]+'" class="'+(x[0]==g[0]?"on":"")+'">'+x[1]+(c?" ("+c+")":"")+"</button>"}).join("")+"</div>";
+    h+="<h2>"+g[1]+" 1 to "+n+"</h2>";for(k=0;k<sh;k++)h+=wout(g[0],k);
+    if(n>16)h+='<button class="ghost" data-act="oall">'+(oall?"Show first 16 outputs":"Show all "+n+" outputs")+"</button>"}
+  return h}
 function renderTab(){var v=$("view"),h="",k,N=all?32:8,e=cur;
-  if(tab==0){h+="<h2>Channels 1 to 32</h2>";for(k=0;k<N;k++)h+=row("c",k);h+='<button class="ghost" data-act="all">'+(all?"Show first 8 channels":"Show all 32 channels")+"</button>"}
-  if(tab==1){h+="<h2>Aux in 1 to 8</h2>";for(k=0;k<8;k++)h+=row("a",k);h+="<h2>FX returns 1 to 8</h2>";for(k=0;k<8;k++)h+=row("f",k)}
-  if(tab==2){h+="<h2>Outputs 1 to 16</h2>";for(k=0;k<16;k++)h+=oout(k)}
-  if(tab==3){var n=filled(e),arm=delArm===e.id;
-    var p=scnPanel(e),others=DB.events.filter(function(x){return x.id!==e.id}).sort(function(a,b){return(b.dt||"").localeCompare(a.dt||"")||b.upd-a.upd});
+  if(isW(e)&&tab<3)h=renderWing();
+  else if(tab==0){h+="<h2>Channels 1 to 32</h2>";for(k=0;k<N;k++)h+=row("c",k);h+='<button class="ghost" data-act="all">'+(all?"Show first 8 channels":"Show all 32 channels")+"</button>"}
+  else if(tab==1){h+="<h2>Aux in 1 to 8</h2>";for(k=0;k<8;k++)h+=row("a",k);h+="<h2>FX returns 1 to 8</h2>";for(k=0;k<8;k++)h+=row("f",k)}
+  else if(tab==2){h+="<h2>Outputs 1 to 16</h2>";for(k=0;k<16;k++)h+=oout(k)}
+  if(tab==3){var n=filled(e),arm=delArm===e.id,w=isW(e);
+    var p=w?wingPanel(e):scnPanel(e),others=DB.events.filter(function(x){return x.id!==e.id}).sort(function(a,b){return(b.dt||"").localeCompare(a.dt||"")||b.upd-a.upd});
     h="<h2>Export</h2>"+'<p class="sub" style="margin:0 0 10px">'+n+" of 48 inputs filled in. Your work saves on this device as you type.</p>"+'<div class="bar"><i style="width:'+Math.round(n/48*100)+'%"></i></div>'+
-    '<div class="xg"><button class="xb" data-act="pdf"><b>PDF</b><span>Patch sheet</span></button><button class="xb" data-act="scn"'+(p.ok?"":" disabled")+'><b>SCN</b><span>Console scene</span></button><button class="xb" data-act="csv"><b>CSV</b><span>Spreadsheet</span></button></div><p class="msg" id="msg" role="status"></p>'+
-    "<h2>Console input routing</h2>"+p.html+
+    '<div class="xg"><button class="xb" data-act="pdf"><b>PDF</b><span>Patch sheet</span></button>'+
+    (w?'<button class="xb" data-act="snip"'+(p.ok?"":" disabled")+'><b>SNIP</b><span>WING snippet</span></button>':'<button class="xb" data-act="scn"'+(p.ok?"":" disabled")+'><b>SCN</b><span>Console scene</span></button>')+
+    '</div><p class="msg" id="msg" role="status"></p>'+
+    (w?"<h2>What the snippet changes</h2>":"<h2>Console input routing</h2>")+p.html+
     "<h2>Previous events</h2>"+(others.length?'<div class="pl">'+others.map(function(x){var id=esc(x.id);return'<div class="pe"><div class="pm"><b>'+esc(x.ev||"Untitled event")+"</b><span>"+esc(fmtDate(x.dt))+(x.vn?" · "+esc(x.vn):"")+'</span></div><button data-act="open" data-id="'+id+'">Open</button><button data-act="dup" data-id="'+id+'">Duplicate</button></div>'}).join("")+"</div>":'<p class="sub" style="margin:0">No other events yet.</p>')+
     '<h2>This event</h2><div class="acts"><button class="ghost" data-act="dup" data-id="'+esc(e.id)+'">Duplicate event</button><button class="ghost del'+(arm?" arm":"")+'" data-act="del" data-id="'+esc(e.id)+'">'+(arm?"Confirm delete":"Delete event")+"</button></div>"}
   v.innerHTML=h;document.querySelectorAll("#tabs button").forEach(function(b,i){b.className=i==tab?"on":"";b.setAttribute("aria-selected",i==tab)})}
@@ -565,9 +632,9 @@ var sayTo="msg";function say(t,err){var m=$(sayTo);sayTo="msg";if(m){m.textConte
 
 /* ---------- actions ---------- */
 function find(id){for(var i=0;i<DB.events.length;i++)if(DB.events[i].id===id)return DB.events[i];return null}
-function openEvent(e){cur=e;view="edit";tab=0;open={};delArm=null;all=e.c.slice(8).some(used);render();window.scrollTo(0,0)}
-function goHome(){if(tm)save(true);view="home";cur=null;delArm=null;render();window.scrollTo(0,0)}
-function newEvent(){var e=blank();DB.events.push(e);save(true);openEvent(e);setTimeout(function(){var i=$("ev");if(i)i.focus()},50)}
+function openEvent(e){cur=e;view="edit";tab=0;open={};delArm=null;pick=false;ogrp="LCL";oall=false;all=(isW(e)?e.w.c:e.c).slice(8).some(used);render();window.scrollTo(0,0)}
+function goHome(){if(tm)save(true);view="home";cur=null;delArm=null;pick=false;render();window.scrollTo(0,0)}
+function newEvent(con){var e=blank();e.con=con||"";DB.events.push(e);save(true);openEvent(e);setTimeout(function(){var i=$("ev");if(i)i.focus()},50)}
 function dupEvent(e){var c=norm(JSON.parse(JSON.stringify(e)));c.id=uid();c.ev=(e.ev||"Untitled event")+" (copy)";c.dt=today();c.created=c.upd=Date.now();DB.events.push(c);save(true);openEvent(c);toast("Duplicated. Change the date and anything that’s different.")}
 function delEvent(e){DB.events=DB.events.filter(function(x){return x.id!==e.id});save(true);delArm=null;toast("Deleted “"+(e.ev||"Untitled event")+"”");goHome()}
 
@@ -575,24 +642,33 @@ app.addEventListener("click",function(ev){var b=ev.target.closest("button");
   if(!b){var card=ev.target.closest("[data-open]");if(card){var e0=find(card.getAttribute("data-open"));if(e0)openEvent(e0)}return}
   var a=b.getAttribute("data-act"),id=b.getAttribute("data-id"),t=b.getAttribute("data-t");
   if(t!==null){tab=+t;open={};delArm=null;renderTab();var tb=$("tabs");if(tb&&tb.getBoundingClientRect().top<0)tb.scrollIntoView();return}
-  if(a==="new")return newEvent();
-  if(a==="import"){$("file").value="";$("file").click();return}
+  if(a==="new"){pick=!pick;render();return}
+  if(a==="newc")return newEvent(b.getAttribute("data-con"));
+  if(a==="oall"){oall=!oall;renderTab();return}
+  var og=b.getAttribute("data-og");if(og){ogrp=og;oall=false;open={};renderTab();return}
+  var ms=b.getAttribute("data-ms");if(ms!==null){var wc=cur.w.c[+ms];wc.m=wc.m?0:1;b.className="v ms"+(wc.m?" on":"");b.textContent=wc.m?"ST":"M";b.setAttribute("aria-pressed",!!wc.m);touch();return}
   if(a==="home")return goHome();
   if(a==="open"){var e1=find(id);if(e1)openEvent(e1);return}
   if(a==="dup"){var e2=find(id);if(e2)dupEvent(e2);return}
   if(a==="del"){var e3=find(id);if(!e3)return;if(delArm!==id){armDelete(id);render();return}clearTimeout(delTimer);return delEvent(e3)}
   if(a==="all"){all=!all;renderTab();return}
   if(a==="venue"){var nm=$("vi").value.trim();if(!nm)return;var v=vget(),f=null;v.forEach(function(x){if(x.toLowerCase()===nm.toLowerCase())f=x});if(!f){vset(v.concat([nm]));f=nm}cur.vn=f;touch();$("vi").value="";$("nv").hidden=true;vr();return}
-  if(a==="csv")return exportCSV(b);
   if(a==="pdf")return exportPDF(b);
   if(a==="scn")return exportSCN(b);
-  var kk=b.getAttribute("data-k");if(kk&&kk.charAt(0)==="o"){var zo=kk.split("|"),oi=+zo[1];cur.ok[oi]=cur.ok[oi]==+zo[2]?-1:+zo[2];open["o|"+oi]=false;touch();renderTab();return}
+  if(a==="snip")return exportSNIP(b);
+  var kk=b.getAttribute("data-k");
+  if(kk&&kk.charAt(0)==="w"){var zw=kk.split("|"),it,okey,ci;
+    if(zw[0]==="wo"){it=cur.w.o[zw[1]][+zw[2]];okey=zw.slice(0,3).join("|");ci=+zw[3]}else{it=cur.w[zw[0].charAt(1)][+zw[1]];okey=zw[0]+"|"+zw[1];ci=+zw[2]}
+    it.k=it.k==ci?-1:ci;open[okey]=false;touch();renderTab();return}if(kk&&kk.charAt(0)==="o"){var zo=kk.split("|"),oi=+zo[1];cur.ok[oi]=cur.ok[oi]==+zo[2]?-1:+zo[2];open["o|"+oi]=false;touch();renderTab();return}
   if(kk){var z=kk.split("|"),r=cur[z[0]][z[1]];r.k=r.k==+z[2]?-1:+z[2];open[z[0]+"|"+z[1]]=false;touch();renderTab();return}
   var n=b.getAttribute("data-n");if(n){open[n]=!open[n];renderTab();return}
   var p=b.getAttribute("data-p");if(p!==null){var d=cur.c[p];d.p=d.p?0:1;b.className="v"+(d.p?" on":"");b.setAttribute("aria-pressed",!!d.p);touch();return}
 });
 function upd(ev){var t=ev.target;if(!cur)return;
-  var f=t.getAttribute("data-f");if(f){cur[f]=t.value;if(f==="con")setCon(t.value);if(f==="ev")$("crumb").textContent=t.value||"Untitled event";touch();return}
+  var f=t.getAttribute("data-f");if(f){if(f==="con"&&cur.con===t.value)return;cur[f]=t.value;if(f==="ev")$("crumb").textContent=t.value||"Untitled event";touch();
+    if(f==="con"){open={};ogrp="LCL";oall=false;if(tab>3)tab=0;all=(isW()?cur.w.c:cur.c).slice(8).some(used);renderEdit()}return}
+  var w=t.getAttribute("data-w");if(w){var yw=w.split("|");cur.w[yw[0]][+yw[2]][yw[1]]=t.value;touch();if(yw[1]==="n"){var nw=t.closest(".r").querySelector(".cn");if(nw)nw.innerHTML=p2(+yw[2]+1)+(t.value?"<i>•</i>":"")}return}
+  var wo=t.getAttribute("data-wo");if(wo){var yo=wo.split("|");cur.w.o[yo[0]][+yo[2]][yo[1]]=t.value;touch();return}
   if(t.id==="vs"){if(ev.type!=="change")return;if(t.value==="__new"){$("nv").hidden=false;$("vi").focus();return}$("nv").hidden=true;cur.vn=t.value;touch();return}
   var o=t.getAttribute("data-o");if(o){var q=o.split("|");cur[LB[q[0]]][q[1]]=t.value;touch();return}
   var s=t.getAttribute("data-os");if(s!==null){cur.os[s]=t.value;touch();return}
@@ -609,50 +685,6 @@ async function saveFile(filename,data,mime){var dl=await getDL();
   try{var blob=data instanceof Blob?data:new Blob([data],{type:mime});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},10000);return"saved"}catch(x){return"error"}}
 function busy(b,on){b.disabled=on;b.classList.toggle("busy",on)}
 
-/* ---------- CSV ---------- */
-function q(v){v=String(v==null?"":v);return/[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
-function toCSV(e){var r=[["Event",e.ev],["Date",e.dt],["Venue",e.vn],["Console",conName(e.con)],[],["Section","No","Label","Source or bus","48V","Colour","Notes"]];
-  [["c","Input channel"],["a","Aux in"],["f","FX return"]].forEach(function(z){e[z[0]].forEach(function(c,i){if(used(c))r.push([z[1],i+1,c.l,sname(z[0],c.s),z[0]=="c"?(c.p?"On":"Off"):"",c.k>=0?cs(c.k).n:"",c.n])})});
-  for(var i=0;i<16;i++)if(e.ol[i]||e.os[i]||e.ok[i]>=0)r.push(["Output",i+1,e.ol[i]||"",bname(e.os[i]),"",e.ok[i]>=0?cs(e.ok[i]).n:"",""]);
-  for(i=0;i<16;i++)if(e.bl[i])r.push(["Mix bus",i+1,e.bl[i],"","","",""]);
-  ["Main L","Main R","Mono"].forEach(function(n,i){if(e.ml[i])r.push(["Main",n,e.ml[i],"","","",""])});
-  for(i=0;i<6;i++)if(e.xl[i])r.push(["Matrix",i+1,e.xl[i],"","","",""]);
-  return"﻿"+r.map(function(x){return x.map(q).join(",")}).join("\r\n")}
-async function exportCSV(b){busy(b,true);var res=await saveFile("MX32-patch-list-"+safeName(cur.ev)+"-"+cur.dt+".csv",toCSV(cur),"text/csv");busy(b,false);
-  say(res==="saved"?"CSV saved. Open it in Excel, Numbers or Google Sheets.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
-function parseCSV(t){t=t.replace(/^﻿/,"");var first=t.split(/\r?\n/,1)[0]||"",d=first.split(";").length>first.split(",").length?";":",";
-  var rows=[],row=[],f="",inq=false;
-  for(var i=0;i<t.length;i++){var c=t[i];
-    if(inq){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else inq=false}else f+=c}
-    else if(c=='"')inq=true;else if(c==d){row.push(f);f=""}else if(c=="\n"){row.push(f);rows.push(row);row=[];f=""}else if(c!="\r")f+=c}
-  if(f!==""||row.length){row.push(f);rows.push(row)}return rows}
-function normDate(s){s=(s||"").trim();var m;
-  if((m=/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/.exec(s)))return m[1]+"-"+p2(+m[2])+"-"+p2(+m[3]);
-  if((m=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})$/.exec(s))){var a=+m[1],b=+m[2],y=+m[3];if(y<100)y+=2000;var dd=a,mm=b;if(b>12&&a<=12){dd=b;mm=a}if(mm<1||mm>12||dd<1||dd>31)return"";return y+"-"+p2(mm)+"-"+p2(dd)}
-  return""}
-function fromCSV(text,fname){var rows=parseCSV(text).map(function(r){return r.map(function(s){return s.trim()})});
-  var e=blank(),hdr=null,cnt={i:0,o:0};e.dt="";
-  var col={section:0,no:1,label:2,src:3,ph:4,colour:5,notes:6};
-  rows.forEach(function(r){var k=(r[0]||"").toLowerCase();
-    if(!hdr){if(k==="event")e.ev=r[1]||"";else if(k==="date")e.dt=normDate(r[1]);else if(k==="venue")e.vn=r[1]||"";
-      else if(k==="console")e.con=/midas|m32/i.test(r[1]||"")?"M32":/behringer|x32/i.test(r[1]||"")?"X32":"";
-      else if(k==="section"){hdr=r;r.forEach(function(h,i){h=h.toLowerCase();if(h=="no"||h=="no."||h=="#")col.no=i;else if(h=="label"||h=="name")col.label=i;else if(/source|bus/.test(h))col.src=i;else if(/48v|phantom/.test(h))col.ph=i;else if(/colou?r/.test(h))col.colour=i;else if(/note/.test(h))col.notes=i})}
-      return}
-    var get=function(x){return r[col[x]]||""},s=k,no=get("no"),n=parseInt(no,10),g=s==="input channel"?"c":s==="aux in"?"a":s==="fx return"?"f":null;
-    if(g){if(!inRange(n,1,g=="c"?32:8))return;var ch=e[g][n-1];ch.l=get("label");ch.s=scode(g,get("src"));ch.p=g=="c"&&/^(on|yes|1|true)$/i.test(get("ph"))?1:0;ch.k=COLOURS.indexOf(get("colour").toLowerCase());ch.n=get("notes");cnt.i++;return}
-    if(s==="output"&&inRange(n,1,16)){e.ol[n-1]=get("label");e.os[n-1]=bcode(get("src"));e.ok[n-1]=COLOURS.indexOf(get("colour").toLowerCase());cnt.o++}
-    else if(s==="mix bus"&&inRange(n,1,16)){e.bl[n-1]=get("label");cnt.o++}
-    else if(s==="main"){var m=["main l","main r","mono"].indexOf(no.toLowerCase());if(m>=0){e.ml[m]=get("label");cnt.o++}}
-    else if(s==="matrix"&&inRange(n,1,6)){e.xl[n-1]=get("label");cnt.o++}});
-  if(!hdr)return null;
-  if(!e.dt)e.dt=today();
-  if(!e.ev&&fname)e.ev=fname.replace(/\.csv$/i,"").replace(/^MX32-patch-list-/i,"").replace(/[-_]+/g," ").trim();
-  return{e:e,cnt:cnt}}
-$("file").addEventListener("change",function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();
-  rd.onload=function(){var res=null;try{res=fromCSV(String(rd.result||""),f.name)}catch(x){}
-    if(!res){toast("That file doesn’t look like an MX32 patch list. Choose a CSV saved from this app.",true);return}
-    DB.events.push(res.e);save(true);openEvent(res.e);toast("Imported “"+(res.e.ev||"Untitled event")+"”: "+res.cnt.i+(res.cnt.i==1?" input, ":" inputs, ")+res.cnt.o+(res.cnt.o==1?" output":" outputs"))};
-  rd.onerror=function(){toast("Couldn’t read that file.",true)};rd.readAsText(f)});
 
 /* ---------- PDF ---------- */
 var jsp=null;
@@ -672,12 +704,20 @@ function buildPDF(J,e){var doc=new J.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,
   function tr(cells,i,faint){var rh=7;if(y+rh>H-16){newPage();doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(16,20,27);doc.text(title+" (continued)",M,y+3.9);y+=7;thead()}
     if(i%2)doc.setFillColor(247,248,250),doc.rect(M,y,W-2*M,rh,"F");var x=M;
     cols.forEach(function(c,j){var v=cells[j];
-      if(v&&typeof v==="object"&&v.sw!=null){var s=cs(v.sw),b=rgb(s.b),tc=rgb(s.t);doc.setFillColor(b[0],b[1],b[2]);doc.setDrawColor(200,204,212);doc.roundedRect(x+1.5,y+1.2,c.w-3,rh-2.4,1,1,"FD");doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(tc[0],tc[1],tc[2]);doc.text(s.n,x+c.w/2,y+4.7,{align:"center"})}
+      if(v&&typeof v==="object"&&v.sw!=null){var s=v.w?wcs(v.sw):cs(v.sw),b=rgb(s.b),tc=rgb(s.t);doc.setFillColor(b[0],b[1],b[2]);doc.setDrawColor(200,204,212);doc.roundedRect(x+1.5,y+1.2,c.w-3,rh-2.4,1,1,"FD");doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(tc[0],tc[1],tc[2]);doc.text(s.n,x+c.w/2,y+4.7,{align:"center"})}
       else if(v&&typeof v==="object"&&v.on!=null){doc.setFont("helvetica","bold");doc.setFontSize(8);if(v.on){doc.setTextColor(200,38,45);doc.text("ON",x+c.w/2,y+4.7,{align:"center"})}else{doc.setTextColor(185,190,200);doc.text("-",x+c.w/2,y+4.7,{align:"center"})}}
       else{doc.setFont("helvetica",c.b?"bold":"normal");doc.setFontSize(c.b?9.5:9);var col=faint?[170,176,186]:c.mu?[90,100,116]:[16,20,27];doc.setTextColor(col[0],col[1],col[2]);doc.text(fit(v,c.w-4),c.al==="c"?x+c.w/2:x+2,y+4.8,c.al==="c"?{align:"center"}:undefined)}
       x+=c.w});
     doc.setDrawColor(226,230,236);doc.setLineWidth(.2);doc.line(M,y+rh,W-M,y+rh);y+=rh}
   head();
+  if(e.con==="WING"){var WE=e.w,wl=0;WE.c.forEach(function(c,i){if(used(c))wl=i+1});if(!wl)wl=40;
+    section("Input channels",[{h:"Ch",w:12,al:"c",b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:44,b:1},{h:"Source",w:33,mu:1},{h:"M/S",w:12,al:"c",mu:1},{h:"Notes",w:68,mu:1}]);
+    for(var wi=0;wi<wl;wi++){var wc=WE.c[wi];tr([String(wi+1),wc.k>=0?{sw:wc.k,w:1}:"",wc.l,wsname(wc.s),used(wc)?(wc.m?"ST":"M"):"",wc.n],wi,!used(wc))}y+=5;
+    var wa=[];WE.a.forEach(function(c,i){if(used(c))wa.push([String(i+1),c.k>=0?{sw:c.k,w:1}:"",c.l,wsname(c.s),c.n])});
+    if(wa.length){section("Aux in",[{h:"No",w:12,al:"c",b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:48,b:1},{h:"Source",w:31,mu:1},{h:"Notes",w:78,mu:1}]);wa.forEach(function(r,i){tr(r,i)});y+=5}
+    var wo=[];WOUT.forEach(function(g){WE.o[g[0]].forEach(function(o,i){if(oused(o))wo.push([g[1]+" "+(i+1),o.k>=0?{sw:o.k,w:1}:"",o.l,wfname(o.s)])})});
+    if(wo.length){section("Outputs",[{h:"Output",w:30,b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:74,b:1},{h:"Fed from",w:65,mu:1}]);wo.forEach(function(r,i){tr(r,i)})}
+  }else{
   var last=0;e.c.forEach(function(c,i){if(used(c))last=i+1});if(!last)last=32;
   var IC=F48?[{h:"Ch",w:12,al:"c",b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:48,b:1},{h:"Source",w:31,mu:1},{h:"48V",w:13,al:"c"},{h:"Notes",w:65,mu:1}]:[{h:"Ch",w:12,al:"c",b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:48,b:1},{h:"Source",w:31,mu:1},{h:"Notes",w:78,mu:1}];
   section("Input channels",IC);for(var i=0;i<last;i++){var c=e.c[i],u=used(c);tr(F48?[String(i+1),c.k>=0?{sw:c.k}:"",c.l,sname("c",c.s),{on:c.p},c.n]:[String(i+1),c.k>=0?{sw:c.k}:"",c.l,sname("c",c.s),c.n],i,!u)}y+=5;
@@ -687,11 +727,12 @@ function buildPDF(J,e){var doc=new J.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,
   if(outs.length){section("Outputs",[{h:"Output",w:22,b:1},{h:"Colour",w:17,al:"c"},{h:"Label",w:82,b:1},{h:"Fed from",w:65,mu:1}]);outs.forEach(function(r,i){tr(r,i)});y+=5}
   var bus=[];for(i=0;i<16;i++)if(e.bl[i])bus.push(["Bus "+(i+1),e.bl[i]]);["Main L","Main R","Mono"].forEach(function(n,j){if(e.ml[j])bus.push([n,e.ml[j]])});for(i=0;i<6;i++)if(e.xl[i])bus.push(["Matrix "+(i+1),e.xl[i]]);
   if(bus.length){section("Mixes",[{h:"Mix",w:28,b:1},{h:"Label",w:158}]);bus.forEach(function(r,i){tr(r,i)})}
+  }
   var pages=doc.getNumberOfPages(),gen=fmtDate(today());for(var p=1;p<=pages;p++){doc.setPage(p);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(140,148,160);doc.text("MX32 Patch Sheet  |  Made by Kirin\u2122  |  "+gen,M,H-8);doc.text("Page "+p+" of "+pages,W-M,H-8,{align:"right"})}
   return doc}
 async function exportPDF(b){busy(b,true);var J;
   try{J=await loadPDF()}catch(x){busy(b,false);say("Couldn’t load the PDF maker. Check your internet connection and try again.",true);return}
-  var res;try{var doc=buildPDF(J,cur);res=await saveFile("MX32-patch-sheet-"+safeName(cur.ev)+"-"+cur.dt+".pdf",doc.output("blob"),"application/pdf")}catch(x){console.error(x);res="error"}
+  var res;try{var doc=buildPDF(J,cur);res=await saveFile((isW()?"WING":"MX32")+"-patch-sheet-"+safeName(cur.ev)+"-"+cur.dt+".pdf",doc.output("blob"),"application/pdf")}catch(x){console.error(x);res="error"}
   busy(b,false);say(res==="saved"?"PDF saved. Print it for FOH or send it to the stage crew.":res==="declined"?"Save cancelled.":"Couldn’t make the PDF. Try again.",res==="error")}
 
 /* ---------- console scene (.scn) ---------- */
@@ -758,6 +799,36 @@ async function exportSCN(b){var txt;try{txt=buildScene(cur,getTpl())}catch(x){sa
     say(res==="saved"?"Saved a .zip with "+fn+" inside. Unzip it, copy the .scn file to a USB stick, then load it on the console into a spare scene slot.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
   else{res=await saveFile(fn,txt,"application/octet-stream");busy(b,false);
     say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the console into a spare scene slot.":"Couldn’t save the file. Try again.",res!=="saved")}}
+
+/* ---------- WING snippet (.snip) ----------
+   A snippet is a JSON file holding only the settings it changes; everything else on the desk stays as it is.
+   Written: channel / aux name, colour (1–12) and source (in.conn.grp / in.conn.in), and output routing (io.out.<group>.<n>.grp / in).
+   Channel parts follow published WING snapshot keys; the output part is NOT yet confirmed on a real WING. */
+var SNIP_TYPE="snippet.10",SNIP_FW="3.0.5-0-g0c2b9d4a:release";
+function buildSnip(e){var W=e.w,ae={},n=0,cnt={ch:0,aux:0,out:0};
+  [["c","ch"],["a","aux"]].forEach(function(z){W[z[0]].forEach(function(c,i){if(!used(c))return;var o={},nm=scnStr(c.l,12),src=wcode(c.s);
+    if(nm){o.name=nm;n++}if(c.k>=0){o.col=c.k+1;n++}if(src){o["in"]={conn:{grp:src.g,"in":src.i}};n+=2}
+    if(Object.keys(o).length){(ae[z[1]]=ae[z[1]]||{})[String(i+1)]=o;cnt[z[1]]++}})});
+  var out={};WOUT.forEach(function(g){W.o[g[0]].forEach(function(o,i){var s=wcode(o.s);if(!s)return;(out[g[0]]=out[g[0]]||{})[String(i+1)]={grp:s.g,"in":s.i};n+=2;cnt.out++})});
+  if(cnt.out)ae.io={out:out};
+  var d=new Date(),ts=d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())+" "+p2(d.getHours())+":"+p2(d.getMinutes())+":"+p2(d.getSeconds());
+  var j={type:SNIP_TYPE,creator_fw:SNIP_FW,creator_sn:"NO_SERIAL",creator_model:"wing",creator_version:"",creator_name:"MX32 Patch Sheet",created:ts,active_show:"",active_scene:"",num_pars:n,ae_data:ae,ce_data:{},ae_globals:{},ce_globals:{}};
+  return{text:JSON.stringify(j,null,2),n:n,cnt:cnt}}
+function wingPanel(e){var s=buildSnip(e),W=e.w,h="",notes=[];
+  h+='<div class="route">'+[["Channels",s.cnt.ch],["Aux in",s.cnt.aux],["Outputs patched",s.cnt.out],["Settings",s.n]].map(function(t){return'<div class="rt'+(t[1]?" chg":"")+'"><span>'+t[0]+"</span><b>"+t[1]+"</b></div>"}).join("")+"</div>";
+  notes.push("The snippet only changes what you filled in: channel and aux names, colours and sources, and output patching. Your EQ, dynamics, faders and everything else on the desk stay as they are.");
+  var nosrc=W.c.concat(W.a).filter(function(c){return used(c)&&!c.s}).length;if(nosrc)notes.push(nosrc+" filled-in channel"+(nosrc>1?"s have":" has")+" no source, so "+(nosrc>1?"they keep":"it keeps")+" the source already set on the desk.");
+  if(W.c.some(function(c){return c.m}))notes.push("Mono / Stereo shows on the patch sheet only. Set stereo sources on the desk.");
+  var ol=0;WOUT.forEach(function(g){W.o[g[0]].forEach(function(o){if(o.l||o.k>=0)ol++})});if(ol)notes.push("Output labels and colours are for the patch sheet only. The desk gets the output patching.");
+  notes.push("Test first: this snippet hasn’t been checked on a real WING yet. Load it when no show is running and check a few channels.");
+  h+='<div class="note">'+notes.map(function(t){return"<p>"+esc(t)+"</p>"}).join("")+"</div>";
+  return{html:h,ok:s.n>0}}
+async function exportSNIP(b){var s=buildSnip(cur);if(!s.n){say("Fill in at least one channel or output first.",true);return}
+  busy(b,true);var base=safeName(cur.ev).slice(0,24),fn=base+".snip",dl=await getDL(),res;
+  if(dl){res=await saveFile(base+"-snippet.zip",zip1(fn,s.text),"application/zip");busy(b,false);
+    say(res==="saved"?"Saved a .zip with "+fn+" inside. Unzip it, copy the .snip file to a USB stick, then load it on the WING from Library › Snip.":res==="declined"?"Save cancelled.":"Couldn’t save the file. Try again.",res==="error")}
+  else{res=await saveFile(fn,s.text,"application/json");busy(b,false);
+    say(res==="saved"?"Saved "+fn+". Copy it to a USB stick, then load it on the WING from Library › Snip.":"Couldn’t save the file. Try again.",res!=="saved")}}
 
 
 render();

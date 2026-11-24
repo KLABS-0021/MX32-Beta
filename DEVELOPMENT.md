@@ -30,9 +30,11 @@ Read this first when continuing work on the app. It explains where everything is
 - No tape strip preview on the Inputs tab; the user removed it.
 - Colour pickers close by themselves after a colour is picked. Inverted colours show as a coloured ring.
 - Delete needs a second tap on a small red "Confirm delete" button (resets after 4 s).
-- Tabs: Inputs (channels 1–32 only) · Aux & FX · Outputs (outputs 1–16 with colour) · Export.
-- Export: PDF, SCN and CSV as three matching buttons side by side, then input routing, previous events (Open / Duplicate) and this event (Duplicate / Delete).
-- Home page: only the "+ New event" button, no import.
+- Tabs (M32/X32): Inputs (channels 1–32 only) · Aux & FX · Outputs (outputs 1–16 with colour) · Export.
+- Tabs (WING): Inputs (channels 1–40, with M/ST button) · Aux (1–8) · Outputs (Local 1–8, AES50 A/B/C 1–48, picked with a segmented bar) · Export.
+- Export: PDF plus one console-file button: SCN for M32/X32, SNIP (WING snippet) for WING. CSV was removed (25 Nov 2026, user's choice). Then input routing (or "What the snippet changes" for WING), previous events (Open / Duplicate) and this event (Duplicate / Delete).
+- Home page: "+ New event" opens a console chooser (Midas M32 / Behringer X32 / Behringer WING). No import.
+- Name limit is 12 characters for all consoles (user's choice; WING allows 16, can be raised later).
 - Layout: phone = one column; ≥720 px (iPad) = wider rows with notes inline, details in one row; ≥1100 px (desktop, iPad landscape) = sidebar with details and tabs.
 - PDF stays white for printing (black rule, red accents).
 
@@ -43,6 +45,9 @@ Read this first when continuing work on the app. It explains where everything is
 - Channel / aux / FX: `{l: label, s: source code, p: 48V 0/1, n: notes, k: colour 0–15 or -1}`
 - Source codes: `L1–L32` local, `A1–A48` AES50 A, `B1–B48` AES50 B; aux `X1–X6`, `UL`, `UR`; FX `F1–F8`. Output feeds: `B1–B16` bus, `ML`, `MR`, `MC`, `X1–X6` matrix.
 - Colours 0–15: `OFF RD GN YE BL MG CY WH` then inverted `OFFi … WHi` (same names as the console).
+- **WING** (`con:"WING"`) data lives in its own field `w`, so switching console never loses either side: `w.c[40]`, `w.a[8]` = `{l, s, n, k (0–11 or -1), m (0 mono / 1 stereo)}`; `w.o.LCL[8]`, `w.o.A/B/C[48]` = `{l, s (feed), k}`.
+- WING source codes `GROUP.n`: `LCL` 1–24, `AUX` 1–8, `A`/`B`/`C` 1–48, `SC` 1–32, `USB` 1–48, `AES` 1–2. Output feeds: `MAIN.n` (1–8), `BUS.n` (1–32), `MTX.n` (1–16), where odd = L and even = R of the stereo mix (Bus 3 L = `BUS.5`), or any source code for a direct split.
+- WING colours 0–11 = console colours 1–12: Grey blue, Medium blue, Dark blue, Turquoise, Green, Olive green, Yellow, Orange, Red, Coral, Pink, Mauve.
 
 ## Code map (inside `index.html` `<script>`)
 - `F48` flag at the top stays `false`: the user decided 48V controls are not needed. The leftover 48V code can be removed in a clean-up; scenes always leave phantom power off.
@@ -50,7 +55,7 @@ Read this first when continuing work on the app. It explains where everything is
 - Screens: `renderHome()`, `renderEdit()`, `renderTab()`; rows `row()` (channel/aux/FX), `oout()` (outputs).
 - Events: one click / input / change listener on `#app` using `data-act`, `data-c`, `data-o`, `data-os`, `data-k` (colour), `data-n` (open picker), `data-t` (tab).
 - Saving files: `saveFile()` uses Claude's `downloads` capability inside the Claude preview, otherwise a normal browser download.
-- CSV: `toCSV()`, `fromCSV()` (import code kept, no button).
+- WING: `renderWing()`, rows `wrow()` / `wout()`, colour grid `wgrid()`; snippet `buildSnip()`, `wingPanel()`, `exportSNIP()`. The snippet is sparse JSON (`type "snippet.10"`), holding only what was filled in: `ae_data.ch|aux.<n>.name / col / in.conn.grp / in.conn.in` and `ae_data.io.out.<group>.<n>.grp / in`. **Not yet tested on a real WING**, and the output-routing path is the least certain part. Confirm it against a .snip saved on the desk.
 - PDF: `loadPDF()`, `buildPDF()` (A4, dark header, tables with colour swatches).
 - Blank fields use defaults in the scene: channel N takes console input N (routing Local 1–32 unless a group of 8 is needed for the stage box), names stay empty, and **outputs left blank send their matching mix bus (Out N = Bus N)** (user's choice, no Main L/R default).
 - **Output labels go to the console** through the feed: an output's label and colour are written to the bus, matrix or Main feeding it (an output with no feed counts as its matching bus). The first labelled output wins when several share one feed; Main L and R share the Main name.
