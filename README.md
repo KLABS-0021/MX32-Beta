@@ -30,6 +30,7 @@ Made by Kirin™
   - Computer (Chrome / Edge): the install icon in the address bar
 
 ## Notes
+- **Updating the home-screen icon:** phones keep the old icon of an installed app. On iPhone/iPad, remove the app from the home screen and add it again (Share → Add to Home Screen). On Android it usually updates by itself; otherwise remove and install again.
 - Your events are stored in the browser you use. Save a PDF now and then as a record.
 - Load a new scene or snapshot into a spare slot on the console first and check it before a show.
 - The whole app is `index.html`. Nothing to install or build.
